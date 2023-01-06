@@ -2,8 +2,8 @@ package cache
 
 import "container/list"
 
-// Cache is a LRU cache. It is not safe for concurrent access.
-type Cache struct {
+// LRUCache is an LRU cache. It is not safe for concurrent access.
+type LRUCache struct {
 	maxBytes int64
 	nbytes   int64
 	list     *list.List
@@ -17,14 +17,14 @@ type entry struct {
 	value Val
 }
 
-// Value use Len to count how many bytes it takes
+// Val use Len() to count how many bytes it takes
 type Val interface {
 	Len() int
 }
 
 // New To initialize LRU
-func New(maxBytes int64, onEvicted func(string, Val)) *Cache {
-	return &Cache{
+func New(maxBytes int64, onEvicted func(string, Val)) *LRUCache {
+	return &LRUCache{
 		maxBytes:  maxBytes,
 		list:      list.New(),
 		cache:     make(map[string]*list.Element),
@@ -32,7 +32,7 @@ func New(maxBytes int64, onEvicted func(string, Val)) *Cache {
 	}
 }
 
-func (cache *Cache) Get(key string) (value Val, ok bool) {
+func (cache *LRUCache) Get(key string) (value Val, ok bool) {
 	if item, ok := cache.cache[key]; ok {
 		cache.list.MoveToFront(item)
 		mapEntry := item.Value.(*entry)
@@ -41,7 +41,7 @@ func (cache *Cache) Get(key string) (value Val, ok bool) {
 	return nil, false
 }
 
-func (cache *Cache) Remove() {
+func (cache *LRUCache) Remove() {
 	item := cache.list.Back()
 	if item != nil {
 		cache.list.Remove(item)
@@ -54,7 +54,10 @@ func (cache *Cache) Remove() {
 	}
 }
 
-func (cache *Cache) Add(key string, value Val) {
+// Add : Add new entry into the cache
+// If the key is already in the cache, update the value and move it to the front
+// else insert the key and pop the least recently used key if necessary
+func (cache *LRUCache) Add(key string, value Val) {
 	if ele, ok := cache.cache[key]; ok {
 		cache.list.MoveToFront(ele)
 		mapEntry := ele.Value.(*entry)
@@ -69,4 +72,9 @@ func (cache *Cache) Add(key string, value Val) {
 	for cache.maxBytes != 0 && cache.maxBytes < cache.nbytes {
 		cache.Remove()
 	}
+}
+
+// Len : Get the number of entries in the cache
+func (cache *LRUCache) Len() int {
+	return cache.list.Len()
 }
