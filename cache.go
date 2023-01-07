@@ -22,12 +22,12 @@ func (cache *cache) get(key string) (bv *ByteView, ok bool) {
 	cache.mu.Lock()
 	defer cache.mu.Unlock()
 	if cache.lru == nil {
-		return
+		return nil, false
 	}
 
 	if v, ok := cache.lru.Get(key); ok {
 		return v.(*ByteView), ok
 	}
 
-	return
+	return nil, false
 }
