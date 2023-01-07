@@ -19,6 +19,7 @@ func (bv *ByteView) String() string {
 	return string(bv.bytes)
 }
 
+// Deep copy
 func cloneBytes(bytes []byte) []byte {
 	res := make([]byte, len(bytes))
 	copy(res, bytes)
