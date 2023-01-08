@@ -8,6 +8,7 @@ import (
 
 // A Getter loads data for a key.
 // The callback designed for cache misses
+// It should specify what need to be done when cache miss happens
 type Getter interface {
 	Get(key string) ([]byte, error)
 }
@@ -71,17 +72,18 @@ func (g *Group) Get(key string) (*ByteView, error) {
 	return g.load(key)
 }
 
+//
 func (g *Group) getLocally(key string) (*ByteView, error) {
 	bytes, err := g.getter.Get(key)
 	if err != nil {
 		return nil, err
-
 	}
 	value := ByteView{bytes: cloneBytes(bytes)}
 	g.populateCache(key, &value)
 	return &value, nil
 }
 
+// populateCache Populate new data into the cache
 func (g *Group) populateCache(key string, value *ByteView) {
 	g.mainCache.add(key, value)
 }
@@ -101,6 +103,7 @@ func (g *Group) load(key string) (value *ByteView, err error) {
 	return g.getLocally(key)
 }
 
+// Retrieve data from the remote peer
 func (g *Group) getFromPeer(peer PeerGetter, key string) (*ByteView, error) {
 	bytes, err := peer.Get(g.name, key)
 	if err != nil {
