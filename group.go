@@ -27,6 +27,8 @@ type Group struct {
 	getter     Getter
 	mainCache  cache
 	peerPicker PeerPicker
+	// To ensure that each key request is invoked only once
+	loader *RequestGroup
 }
 
 var (
@@ -45,6 +47,7 @@ func NewGroup(name string, cacheBytes int64, getter Getter) *Group {
 		name:      name,
 		getter:    getter,
 		mainCache: cache{cacheBytes: cacheBytes},
+		loader:    &RequestGroup{},
 	}
 	groups[name] = g
 	return g
@@ -91,16 +94,22 @@ func (g *Group) populateCache(key string, value *ByteView) {
 // load Cache miss; Load data from remote peer or local memory
 // try to load from remote peers first
 func (g *Group) load(key string) (value *ByteView, err error) {
-	if g.peerPicker != nil {
-		if peer, ok := g.peerPicker.PickPeer(key); ok {
-			if value, err = g.getFromPeer(peer, key); err == nil {
-				return value, nil
+	view, err := g.loader.CallOnce(key, func() (interface{}, error) {
+		if g.peerPicker != nil {
+			if peer, ok := g.peerPicker.PickPeer(key); ok {
+				if value, err = g.getFromPeer(peer, key); err == nil {
+					return value, nil
+				}
+				log.Println("[GeeCache] Failed to get from peer", err)
 			}
-			log.Println("[GeeCache] Failed to get from peer", err)
 		}
-	}
+		return g.getLocally(key)
+	})
 
-	return g.getLocally(key)
+	if err == nil {
+		return view.(*ByteView), nil
+	}
+	return nil, err
 }
 
 // Retrieve data from the remote peer
