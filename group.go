@@ -1,6 +1,7 @@
 package cache
 
 import (
+	pb "cache/cachePB/cachepb"
 	"fmt"
 	"log"
 	"sync"
@@ -114,11 +115,16 @@ func (g *Group) load(key string) (value *ByteView, err error) {
 
 // Retrieve data from the remote peer
 func (g *Group) getFromPeer(peer PeerGetter, key string) (*ByteView, error) {
-	bytes, err := peer.Get(g.name, key)
+	req := &pb.Request{
+		Group: g.name,
+		Key:   key,
+	}
+	res := &pb.Response{}
+	err := peer.Get(req, res)
 	if err != nil {
 		return &ByteView{}, err
 	}
-	return &ByteView{bytes: bytes}, nil
+	return &ByteView{bytes: res.Value}, nil
 }
 
 // RegisterPeers registers a PeerPicker for choosing remote peer
