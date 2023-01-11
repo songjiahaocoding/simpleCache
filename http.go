@@ -107,8 +107,6 @@ func (client *httpGetter) Get(in *pb.Request, out *pb.Response) error {
 	return nil
 }
 
-var _ PeerGetter = (*httpGetter)(nil)
-
 // Set updates the pool's list of peers.
 func (hp *HTTPPool) Set(peers ...string) {
 	hp.mu.Lock()
@@ -131,5 +129,3 @@ func (hp *HTTPPool) PickPeer(key string) (PeerGetter, bool) {
 	}
 	return nil, false
 }
-
-var _ PeerPicker = (*HTTPPool)(nil)

@@ -9,7 +9,7 @@ import (
 // Hash maps bytes to uint32
 type Hash func(data []byte) uint32
 
-// Map constains all hashed keys
+// Map contains all hashed keys
 type Map struct {
 	hash     Hash
 	replicas int

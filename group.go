@@ -76,7 +76,7 @@ func (g *Group) Get(key string) (*ByteView, error) {
 	return g.load(key)
 }
 
-//
+// Get the data from local memory and populate it to the cache
 func (g *Group) getLocally(key string) (*ByteView, error) {
 	bytes, err := g.getter.Get(key)
 	if err != nil {

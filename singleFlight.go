@@ -2,12 +2,16 @@ package cache
 
 import "sync"
 
+// Call Contains the error message and the success value
+// It acts as a cache mechanism to store the previous information
+// to prevent redundant calls
 type Call struct {
 	wg  sync.WaitGroup
 	val interface{}
 	err error
 }
 
+// RequestGroup Stores all the past call and the ongoing ones
 type RequestGroup struct {
 	mu    sync.Mutex // protects calls
 	calls map[string]*Call

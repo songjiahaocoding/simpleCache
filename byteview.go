@@ -1,10 +1,13 @@
 package cache
 
+// ByteView The data structure being transmitted
 type ByteView struct {
+	// []byte for the compatibility for all kinds of data
 	bytes []byte
 }
 
 // Len returns the view's length
+// Implements Val interface
 func (bv *ByteView) Len() int {
 	return len(bv.bytes)
 }

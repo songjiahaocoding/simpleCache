@@ -4,20 +4,20 @@ import (
 	"sync"
 )
 
-// cache
+// cache Encapsulated operations exposed to users
 type cache struct {
 	mu         sync.Mutex
 	lru        *LRUCache
 	cacheBytes int64
 }
 
-func (cache *cache) add(key string, value *ByteView) {
+func (cache *cache) add(key string, bv *ByteView) {
 	cache.mu.Lock()
 	defer cache.mu.Unlock()
 	if cache.lru == nil {
 		cache.lru = New(cache.cacheBytes, nil)
 	}
-	cache.lru.Add(key, value)
+	cache.lru.Add(key, bv)
 }
 
 func (cache *cache) get(key string) (bv *ByteView, ok bool) {

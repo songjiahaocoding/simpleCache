@@ -12,12 +12,14 @@ type LRUCache struct {
 	OnEvicted func(key string, value Val)
 }
 
+// The basic storage unit in LRU
 type entry struct {
 	key   string
 	value Val
 }
 
 // Val use Len() to count how many bytes it takes
+// Val generalizes all the data in LRU
 type Val interface {
 	Len() int
 }
@@ -41,7 +43,7 @@ func (cache *LRUCache) Get(key string) (value Val, ok bool) {
 	return nil, false
 }
 
-func (cache *LRUCache) Remove() {
+func (cache *LRUCache) RemoveLeastRecent() {
 	item := cache.list.Back()
 	if item != nil {
 		cache.list.Remove(item)
@@ -70,11 +72,12 @@ func (cache *LRUCache) Add(key string, value Val) {
 	}
 
 	for cache.maxBytes != 0 && cache.maxBytes < cache.nbytes {
-		cache.Remove()
+		cache.RemoveLeastRecent()
 	}
 }
 
 // Len : Get the number of entries in the cache
+// implements Val interface
 func (cache *LRUCache) Len() int {
 	return cache.list.Len()
 }
